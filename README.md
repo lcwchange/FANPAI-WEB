@@ -1,196 +1,148 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>翻牌交友网</title>
-  <style>
-    body {
-      font-family: 'Helvetica Neue', sans-serif;
-      background: #f6f7fb;
-      margin: 0;
-      padding: 2rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>翻牌交友网</title>
+<style>
+  body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    background: #f2f2f2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px 10px;
+  }
 
+  h1 {
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 1.8rem;
+  }
+
+  #card-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    max-width: 480px;
+  }
+
+  .card {
+    background: white;
+    width: 45vw; /* 宽度为视口宽度的45%，手机上两列 */
+    max-width: 220px;
+    aspect-ratio: 3 / 4; /* 宽高比 */
+    border-radius: 12px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.12);
+    cursor: pointer;
+    position: relative;
+    perspective: 800px;
+  }
+
+  .card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.5s;
+    transform-style: preserve-3d;
+  }
+
+  .card.flipped .card-inner {
+    transform: rotateY(180deg);
+  }
+
+  .card-front, .card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+  }
+
+  .card-front {
+    background: #0a74da;
+    color: white;
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+
+  .card-back {
+    background: white;
+    color: #333;
+    transform: rotateY(180deg);
+    font-size: 1rem;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+  }
+
+  /* 手机竖屏时字体稍微调整 */
+  @media (max-width: 400px) {
     h1 {
-      margin-bottom: 2rem;
-      color: #333;
+      font-size: 1.5rem;
     }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
-    }
-
     .card {
-      perspective: 1000px;
-      width: 180px;
-      height: 240px;
+      width: 90vw;
+      max-width: none;
     }
+  }
 
-    .inner {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      transition: transform 0.8s;
-      transform-style: preserve-3d;
-      cursor: pointer;
-    }
-
-    .flipped {
-      transform: rotateY(180deg);
-    }
-
-    .front, .back {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      backface-visibility: hidden;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-    }
-
-    .front {
-      background-color: #ddd;
-    }
-
-    .front img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      filter: blur(6px);
-    }
-
-    .back {
-      background: white;
-      transform: rotateY(180deg);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-      text-align: center;
-    }
-
-    .back img {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      margin-bottom: 1rem;
-    }
-
-    .nickname {
-      font-weight: bold;
-      margin-bottom: 0.5rem;
-      font-size: 1.1rem;
-    }
-
-    .intro {
-      font-size: 0.9rem;
-      color: #666;
-    }
-  </style>
+</style>
 </head>
 <body>
 
-  <h1>翻牌交友网</h1>
-  <div class="grid">
-    <!-- 卡片1 -->
-    <div class="card" onclick="flip(this)">
-      <div class="inner">
-        <div class="front">
-          <img src="https://i.pravatar.cc/180?img=11" />
-        </div>
-        <div class="back">
-          <img src="https://i.pravatar.cc/180?img=11" />
-          <div class="nickname">小兔几</div>
-          <div class="intro">爱吃草莓，讨厌孤单</div>
-        </div>
+<h1>翻牌交友网</h1>
+<div id="card-container"></div>
+
+<script>
+  const cardsData = [
+    { name: "小明", info: "爱好：篮球，喜欢旅行" },
+    { name: "小红", info: "职业：设计师，喜欢画画" },
+    { name: "阿强", info: "性格：幽默，爱好美食" },
+    { name: "小芳", info: "兴趣：音乐，爱跑步" },
+    { name: "大卫", info: "职业：程序员，喜欢游戏" },
+    { name: "丽丽", info: "爱好：摄影，爱看电影" }
+  ];
+
+  function createCard(cardData) {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    card.innerHTML = `
+      <div class="card-inner">
+        <div class="card-front">${cardData.name}</div>
+        <div class="card-back">${cardData.info}</div>
       </div>
-    </div>
+    `;
 
-    <!-- 卡片2 -->
-    <div class="card" onclick="flip(this)">
-      <div class="inner">
-        <div class="front">
-          <img src="https://i.pravatar.cc/180?img=22" />
-        </div>
-        <div class="back">
-          <img src="https://i.pravatar.cc/180?img=22" />
-          <div class="nickname">浪味仙</div>
-          <div class="intro">自由摄影师，浪到天涯</div>
-        </div>
-      </div>
-    </div>
+    card.addEventListener("click", () => {
+      card.classList.toggle("flipped");
+    });
 
-    <!-- 卡片3 -->
-    <div class="card" onclick="flip(this)">
-      <div class="inner">
-        <div class="front">
-          <img src="https://i.pravatar.cc/180?img=33" />
-        </div>
-        <div class="back">
-          <img src="https://i.pravatar.cc/180?img=33" />
-          <div class="nickname">北岛余光</div>
-          <div class="intro">想和你聊聊宇宙和星光</div>
-        </div>
-      </div>
-    </div>
+    return card;
+  }
 
-    <!-- 卡片4 -->
-    <div class="card" onclick="flip(this)">
-      <div class="inner">
-        <div class="front">
-          <img src="https://i.pravatar.cc/180?img=44" />
-        </div>
-        <div class="back">
-          <img src="https://i.pravatar.cc/180?img=44" />
-          <div class="nickname">程序媛</div>
-          <div class="intro">代码之外，还有热爱</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 卡片5 -->
-    <div class="card" onclick="flip(this)">
-      <div class="inner">
-        <div class="front">
-          <img src="https://i.pravatar.cc/180?img=55" />
-        </div>
-        <div class="back">
-          <img src="https://i.pravatar.cc/180?img=55" />
-          <div class="nickname">阿巴阿巴</div>
-          <div class="intro">没事翻翻牌，有事也翻牌</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 卡片6 -->
-    <div class="card" onclick="flip(this)">
-      <div class="inner">
-        <div class="front">
-          <img src="https://i.pravatar.cc/180?img=66" />
-        </div>
-        <div class="back">
-          <img src="https://i.pravatar.cc/180?img=66" />
-          <div class="nickname">奶茶不加糖</div>
-          <div class="intro">不甜的人也配喝奶茶</div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <script>
-    function flip(card) {
-      const inner = card.querySelector('.inner');
-      inner.classList.toggle('flipped');
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      let j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
     }
-  </script>
+    return array;
+  }
+
+  const container = document.getElementById("card-container");
+  const shuffledCards = shuffle(cardsData).slice(0, 6);
+  shuffledCards.forEach(data => {
+    container.appendChild(createCard(data));
+  });
+</script>
+
 </body>
 </html>
