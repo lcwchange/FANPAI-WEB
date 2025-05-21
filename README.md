@@ -2,7 +2,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>翻牌交友网</title>
+  <title>翻牌网</title>
   <style>
     body {
       font-family: 'Helvetica Neue', sans-serif;
