@@ -1,177 +1,128 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>翻牌网</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Helvetica Neue', sans-serif;
-      background: #f2f4f8;
-      margin: 0;
-      padding: 2rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-    }
-
-    h1 {
-      margin-bottom: 1rem;
-      color: #333;
-    }
-
-    .btn {
-      padding: 0.6rem 1.2rem;
-      font-size: 1rem;
-      background: #007aff;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-bottom: 1.5rem;
-    }
-
-    .btn:disabled {
-      background: #aaa;
-      cursor: not-allowed;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 1.5rem;
-      width: 100%;
-      max-width: 800px;
-    }
-
-    .card {
-      perspective: 1000px;
-      cursor: pointer;
-    }
-
-    .inner {
-      width: 100%;
-      aspect-ratio: 3 / 4;
-      position: relative;
-      transition: transform 0.6s;
-      transform-style: preserve-3d;
-    }
-
-    .card:hover .inner {
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-    }
-
-    .flipped {
-      transform: rotateY(180deg);
-    }
-
-    .front, .back {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      backface-visibility: hidden;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .front {
-      background: #ccc;
-    }
-
-    .front img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      filter: blur(6px);
-    }
-
-    .back {
-      background: white;
-      transform: rotateY(180deg);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-      text-align: center;
-    }
-
-    .back img {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      margin-bottom: 1rem;
-    }
-
-    .nickname {
-      font-weight: bold;
-      font-size: 1.1rem;
-      margin-bottom: 0.5rem;
-      color: #222;
-    }
-
-    .intro {
-      font-size: 0.9rem;
-      color: #666;
-    }
+    * { box-sizing: border-box; margin:0; padding:0; }
+    body { font-family: sans-serif; background:#f2f4f8; padding:1rem; }
+    h1 { text-align:center; margin-bottom:1rem; color:#333; }
+    #actions { text-align:center; margin-bottom:1rem; }
+    .btn { padding:0.6rem 1.2rem; margin:0 0.5rem; background:#007aff; color:#fff; border:none; border-radius:6px; cursor:pointer; }
+    .btn:disabled { background:#ccc; cursor:not-allowed; }
+    #grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1rem; max-width:600px; margin:0 auto 1rem; }
+    .card { perspective:800px; cursor:pointer; }
+    .inner { position:relative; width:100%; padding-top:133%; /* 3:4 */ transition:transform .6s; transform-style:preserve-3d; }
+    .flipped { transform:rotateY(180deg); }
+    .face { position:absolute; top:0; left:0; width:100%; height:100%; backface-visibility:hidden; border-radius:10px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,.1); display:flex; align-items:center; justify-content:center; font-size:1.2rem; color:#fff; }
+    .front  { background:#666; }
+    .back   { background:#fff; transform:rotateY(180deg); flex-direction:column; color:#333; padding:1rem; text-align:center; }
+    .back img { width:60px; height:60px; border-radius:50%; margin-bottom:0.5rem; }
+    #pager { text-align:center; }
   </style>
 </head>
 <body>
+
   <h1>翻牌网</h1>
-  <button class="btn" onclick="simulatePayment()" id="payBtn">💳 支付9.9元 解锁翻牌</button>
-  <div class="grid" id="cardGrid"></div>
+  <div id="actions">
+    <button class="btn" id="shareBtn">🚀 分享解锁翻页</button>
+    <button class="btn" id="vipBtn">🌟 成为会员</button>
+    <span id="status" style="margin-left:1rem;">未解锁翻页，非会员</span>
+  </div>
+
+  <div id="grid"></div>
+
+  <div id="pager">
+    <button class="btn" id="prevBtn" disabled>上一页</button>
+    <span id="pageInfo"></span>
+    <button class="btn" id="nextBtn" disabled>下一页</button>
+  </div>
 
   <script>
-    let isPaid = false;
+    // ==== 参数设置 ====
+    const TOTAL_CARDS = 250;
+    const PAGE_SIZE = 4;
+    let currentPage = 1;
+    let isUnlocked = false;   // 分享或会员后可翻页
+    let isVip = false;        // 会员免费翻牌
+    let balance = 0;          // 支付余额（元）
+    // 生成 250 条示例数据
+    const cards = Array.from({length: TOTAL_CARDS}, (_,i)=>({
+      id: i+1, 
+      img: (i%50)+1,
+      name: `用户${i+1}`,
+      intro: `这是用户${i+1}的简介`
+    }));
 
-    const data = [
-      { img: 11, name: '小兔几', intro: '爱吃草莓，讨厌孤单' },
-      { img: 22, name: '浪味仙', intro: '自由摄影师，浪到天涯' },
-      { img: 33, name: '北岛余光', intro: '想和你聊聊宇宙和星光' },
-      { img: 44, name: '程序媛', intro: '代码之外，还有热爱' },
-      { img: 55, name: '阿巴阿巴', intro: '没事翻翻牌，有事也翻牌' },
-      { img: 66, name: '奶茶不加糖', intro: '不甜的人也配喝奶茶' },
-    ];
+    const grid = document.getElementById('grid');
+    const pageInfo = document.getElementById('pageInfo');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const shareBtn = document.getElementById('shareBtn');
+    const vipBtn   = document.getElementById('vipBtn');
+    const statusEl = document.getElementById('status');
 
-    const grid = document.getElementById('cardGrid');
+    function renderPage() {
+      grid.innerHTML = '';
+      const start = (currentPage-1)*PAGE_SIZE;
+      const pageData = cards.slice(start, start+PAGE_SIZE);
+      pageData.forEach(card=>{
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `
+          <div class="inner" data-id="${card.id}">
+            <div class="face front">${card.id}</div>
+            <div class="face back">
+              <img src="https://i.pravatar.cc/100?img=${card.img}" alt="">
+              <div>${card.name}</div>
+              <div style="font-size:.9rem;color:#666;">${card.intro}</div>
+            </div>
+          </div>`;
+        div.onclick = () => onFlip(div.querySelector('.inner'));
+        grid.appendChild(div);
+      });
+      pageInfo.textContent = `第 ${currentPage}/${Math.ceil(TOTAL_CARDS/PAGE_SIZE)} 页`;
+      prevBtn.disabled = currentPage===1;
+      nextBtn.disabled = !isUnlocked || currentPage===Math.ceil(TOTAL_CARDS/PAGE_SIZE);
+    }
 
-    data.forEach(person => {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `
-        <div class="inner" onclick="handleFlip(this)">
-          <div class="front">
-            <img src="https://i.pravatar.cc/180?img=${person.img}" alt="头像" />
-          </div>
-          <div class="back">
-            <img src="https://i.pravatar.cc/180?img=${person.img}" alt="头像" />
-            <div class="nickname">${person.name}</div>
-            <div class="intro">${person.intro}</div>
-          </div>
-        </div>
-      `;
-      grid.appendChild(card);
-    });
-
-    function handleFlip(innerEl) {
-      if (!isPaid) {
-        alert("请先支付 9.9 元解锁全部翻牌功能");
-        return;
+    function onFlip(inner) {
+      if (isVip) {
+        inner.classList.toggle('flipped');
+      } else {
+        if (balance <= 0) {
+          if (confirm('非会员翻牌需支付 1 元，是否支付？')) {
+            balance -= 1;
+            alert('支付成功，剩余余额 ' + balance + ' 元');
+            inner.classList.toggle('flipped');
+          }
+        } else {
+          inner.classList.toggle('flipped');
+        }
       }
-      innerEl.classList.toggle('flipped');
     }
 
-    function simulatePayment() {
-      isPaid = true;
-      document.getElementById('payBtn').disabled = true;
-      document.getElementById('payBtn').innerText = "✅ 已支付，尽情翻牌";
-      alert("支付成功，您已解锁所有翻牌内容！");
-    }
+    prevBtn.onclick = () => {
+      if (currentPage>1) { currentPage--; renderPage(); }
+    };
+    nextBtn.onclick = () => {
+      if (currentPage<Math.ceil(TOTAL_CARDS/PAGE_SIZE)) { currentPage++; renderPage(); }
+    };
+    shareBtn.onclick = ()=> {
+      isUnlocked = true;
+      statusEl.textContent = isVip ? '会员状态，已解锁全部功能' : '已分享，解锁翻页';
+      renderPage();
+    };
+    vipBtn.onclick = ()=> {
+      isVip = true; balance = Infinity;
+      isUnlocked = true;
+      statusEl.textContent = '会员状态，免费翻页翻牌';
+      renderPage();
+    };
+
+    // 初次渲染
+    renderPage();
   </script>
+
 </body>
 </html>
