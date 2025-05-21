@@ -13,16 +13,18 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      min-height: 100vh;
     }
 
     h1 {
       margin-bottom: 2rem;
       color: #333;
+      user-select: none;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
       gap: 1.5rem;
       width: 100%;
       max-width: 720px;
@@ -30,9 +32,11 @@
 
     .card {
       perspective: 1000px;
-      width: 180px;
-      height: 240px;
-      margin: 0 auto;
+      width: 100%;
+      aspect-ratio: 3 / 4;
+      max-width: 180px;
+      cursor: pointer;
+      user-select: none;
     }
 
     .inner {
@@ -41,7 +45,6 @@
       height: 100%;
       transition: transform 0.8s;
       transform-style: preserve-3d;
-      cursor: pointer;
     }
 
     .flipped {
@@ -67,6 +70,7 @@
       height: 100%;
       object-fit: cover;
       filter: blur(6px);
+      user-select: none;
     }
 
     .back {
@@ -85,31 +89,28 @@
       height: 80px;
       border-radius: 50%;
       margin-bottom: 1rem;
+      user-select: none;
     }
 
     .nickname {
       font-weight: bold;
       margin-bottom: 0.5rem;
       font-size: 1.1rem;
+      color: #222;
+      user-select: none;
     }
 
     .intro {
       font-size: 0.9rem;
       color: #666;
+      user-select: none;
     }
 
-    @media (max-width: 600px) {
-      .grid {
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      }
-      .card {
-        width: 140px;
-        height: 200px;
-      }
-      .back img {
-        width: 60px;
-        height: 60px;
-      }
+    /* 去除页面中所有链接默认蓝色样式 */
+    a {
+      color: inherit;
+      text-decoration: none;
+      cursor: default;
     }
   </style>
 </head>
@@ -117,13 +118,12 @@
 
   <h1>翻牌交友网</h1>
   <div class="grid">
+    <!-- 12张牌 -->
     <div class="card" onclick="flip(this)">
       <div class="inner">
-        <div class="front">
-          <img src="https://i.pravatar.cc/180?img=11" />
-        </div>
+        <div class="front"><img src="https://i.pravatar.cc/180?img=11" alt="头像1" /></div>
         <div class="back">
-          <img src="https://i.pravatar.cc/180?img=11" />
+          <img src="https://i.pravatar.cc/180?img=11" alt="头像1" />
           <div class="nickname">小兔几</div>
           <div class="intro">爱吃草莓，讨厌孤单</div>
         </div>
@@ -132,11 +132,9 @@
 
     <div class="card" onclick="flip(this)">
       <div class="inner">
-        <div class="front">
-          <img src="https://i.pravatar.cc/180?img=22" />
-        </div>
+        <div class="front"><img src="https://i.pravatar.cc/180?img=22" alt="头像2" /></div>
         <div class="back">
-          <img src="https://i.pravatar.cc/180?img=22" />
+          <img src="https://i.pravatar.cc/180?img=22" alt="头像2" />
           <div class="nickname">浪味仙</div>
           <div class="intro">自由摄影师，浪到天涯</div>
         </div>
@@ -145,11 +143,9 @@
 
     <div class="card" onclick="flip(this)">
       <div class="inner">
-        <div class="front">
-          <img src="https://i.pravatar.cc/180?img=33" />
-        </div>
+        <div class="front"><img src="https://i.pravatar.cc/180?img=33" alt="头像3" /></div>
         <div class="back">
-          <img src="https://i.pravatar.cc/180?img=33" />
+          <img src="https://i.pravatar.cc/180?img=33" alt="头像3" />
           <div class="nickname">北岛余光</div>
           <div class="intro">想和你聊聊宇宙和星光</div>
         </div>
@@ -158,11 +154,9 @@
 
     <div class="card" onclick="flip(this)">
       <div class="inner">
-        <div class="front">
-          <img src="https://i.pravatar.cc/180?img=44" />
-        </div>
+        <div class="front"><img src="https://i.pravatar.cc/180?img=44" alt="头像4" /></div>
         <div class="back">
-          <img src="https://i.pravatar.cc/180?img=44" />
+          <img src="https://i.pravatar.cc/180?img=44" alt="头像4" />
           <div class="nickname">程序媛</div>
           <div class="intro">代码之外，还有热爱</div>
         </div>
@@ -171,11 +165,9 @@
 
     <div class="card" onclick="flip(this)">
       <div class="inner">
-        <div class="front">
-          <img src="https://i.pravatar.cc/180?img=55" />
-        </div>
+        <div class="front"><img src="https://i.pravatar.cc/180?img=55" alt="头像5" /></div>
         <div class="back">
-          <img src="https://i.pravatar.cc/180?img=55" />
+          <img src="https://i.pravatar.cc/180?img=55" alt="头像5" />
           <div class="nickname">阿巴阿巴</div>
           <div class="intro">没事翻翻牌，有事也翻牌</div>
         </div>
@@ -184,11 +176,9 @@
 
     <div class="card" onclick="flip(this)">
       <div class="inner">
-        <div class="front">
-          <img src="https://i.pravatar.cc/180?img=66" />
-        </div>
+        <div class="front"><img src="https://i.pravatar.cc/180?img=66" alt="头像6" /></div>
         <div class="back">
-          <img src="https://i.pravatar.cc/180?img=66" />
+          <img src="https://i.pravatar.cc/180?img=66" alt="头像6" />
           <div class="nickname">奶茶不加糖</div>
           <div class="intro">不甜的人也配喝奶茶</div>
         </div>
@@ -197,78 +187,66 @@
 
     <div class="card" onclick="flip(this)">
       <div class="inner">
-        <div class="front">
-          <img src="https://i.pravatar.cc/180?img=77" />
-        </div>
+        <div class="front"><img src="https://i.pravatar.cc/180?img=7" alt="头像7" /></div>
         <div class="back">
-          <img src="https://i.pravatar.cc/180?img=77" />
-          <div class="nickname">小甜甜</div>
-          <div class="intro">喜欢旅行与美食</div>
+          <img src="https://i.pravatar.cc/180?img=7" alt="头像7" />
+          <div class="nickname">海洋之心</div>
+          <div class="intro">喜欢大海和安静的夜晚</div>
         </div>
       </div>
     </div>
 
     <div class="card" onclick="flip(this)">
       <div class="inner">
-        <div class="front">
-          <img src="https://i.pravatar.cc/180?img=88" />
-        </div>
+        <div class="front"><img src="https://i.pravatar.cc/180?img=8" alt="头像8" /></div>
         <div class="back">
-          <img src="https://i.pravatar.cc/180?img=88" />
-          <div class="nickname">风吹麦浪</div>
-          <div class="intro">热爱自然和音乐</div>
+          <img src="https://i.pravatar.cc/180?img=8" alt="头像8" />
+          <div class="nickname">旅行家</div>
+          <div class="intro">背包行走在世界的角落</div>
         </div>
       </div>
     </div>
 
     <div class="card" onclick="flip(this)">
       <div class="inner">
-        <div class="front">
-          <img src="https://i.pravatar.cc/180?img=99" />
-        </div>
+        <div class="front"><img src="https://i.pravatar.cc/180?img=9" alt="头像9" /></div>
         <div class="back">
-          <img src="https://i.pravatar.cc/180?img=99" />
-          <div class="nickname">星辰大海</div>
-          <div class="intro">梦想航海家</div>
+          <img src="https://i.pravatar.cc/180?img=9" alt="头像9" />
+          <div class="nickname">书虫</div>
+          <div class="intro">沉迷于文字的海洋</div>
         </div>
       </div>
     </div>
 
     <div class="card" onclick="flip(this)">
       <div class="inner">
-        <div class="front">
-          <img src="https://i.pravatar.cc/180?img=10" />
-        </div>
+        <div class="front"><img src="https://i.pravatar.cc/180?img=10" alt="头像10" /></div>
         <div class="back">
-          <img src="https://i.pravatar.cc/180?img=10" />
-          <div class="nickname">月光宝盒</div>
-          <div class="intro">夜晚的故事讲述者</div>
+          <img src="https://i.pravatar.cc/180?img=10" alt="头像10" />
+          <div class="nickname">音乐控</div>
+          <div class="intro">用旋律表达情感</div>
         </div>
       </div>
     </div>
 
     <div class="card" onclick="flip(this)">
       <div class="inner">
-        <div class="front">
-          <img src="https://i.pravatar.cc/180?img=21" />
-        </div>
+        <div class="front"><img src="https://i.pravatar.cc/180?img=12" alt="头像11" /></div>
         <div class="back">
-          <img src="https://i.pravatar.cc/180?img=21" />
-          <div class="nickname">咖啡因</div>
-          <div class="intro">爱喝咖啡的码农</div>
+          <img src="https://i.pravatar.cc/180?img=12" alt="头像11" />
+          <div class="nickname">咖啡师</div>
+          <div class="intro">每天一杯咖啡的仪式感</div>
         </div>
       </div>
     </div>
 
     <div class="card" onclick="flip(this)">
       <div class="inner">
-        <div class="front">
-          <img src="https://i.pravatar.cc/180?img=31" />
-        </div>
+        <div class="front"><img src="https://i.pravatar.cc/180?img=13" alt="头像12" /></div>
         <div class="back">
-          <img src="https://i.pravatar.cc/180?img=31" />
-          <div class="nickname">小海豚</div>
-          <div class="intro">喜欢海洋和自由</div>
+          <img src="https://i.pravatar.cc/180?img=13" alt="头像12" />
+          <div class="nickname">影迷</div>
+          <div class="intro">电影让我看到不一样的世界</div>
         </div>
       </div>
     </div>
