@@ -13,26 +13,26 @@
     .btn:disabled { background:#ccc; cursor:not-allowed; }
     #grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1rem; max-width:600px; margin:0 auto 1rem; }
     .card { perspective:800px; cursor:pointer; }
-    .inner { position:relative; width:100%; padding-top:133%; /* 3:4 */ transition:transform .6s; transform-style:preserve-3d; }
+    .inner { position:relative; width:100%; padding-top:133%; transition:transform .6s; transform-style:preserve-3d; }
     .flipped { transform:rotateY(180deg); }
     .face { position:absolute; top:0; left:0; width:100%; height:100%; backface-visibility:hidden; border-radius:10px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,.1); display:flex; align-items:center; justify-content:center; font-size:1.2rem; color:#fff; }
     .front  { background:#666; }
     .back   { background:#fff; transform:rotateY(180deg); flex-direction:column; color:#333; padding:1rem; text-align:center; }
     .back img { width:60px; height:60px; border-radius:50%; margin-bottom:0.5rem; }
-    #pager { text-align:center; margin-bottom: 1rem; }
-    #registerForm { max-width: 300px; margin: 0 auto 1rem; padding: 1rem; background: #fff; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-    #registerForm input { width: 100%; padding: 0.5rem; margin: 0.5rem 0; border: 1px solid #ccc; border-radius: 4px; }
-    #registerForm button { width: 100%; margin-top: 0.5rem; }
-    #registerMsg { text-align: center; color: red; margin-top: 0.5rem; }
+    #pager { text-align:center; margin-bottom:1rem; }
+    #registerForm { max-width:400px; margin:1rem auto 2rem; padding:1rem; background:#fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+    #registerForm input { width:100%; padding:0.5rem; margin:0.5rem 0; border:1px solid #ccc; border-radius:4px; }
+    #registerForm button { width:100%; margin-top:0.5rem; }
+    #registerMsg { text-align:center; color:red; margin-top:0.5rem; }
   </style>
 </head>
 <body>
 
   <h1>翻牌网</h1>
 
-  <!-- 注册表单 -->
+  <!-- 用户注册表单 -->
   <form id="registerForm">
-    <h2>注册账号</h2>
+    <h2 style="text-align:center; margin-bottom:1rem; color:#007aff;">注册账号</h2>
     <input type="text" id="username" placeholder="用户名" required />
     <input type="password" id="password" placeholder="密码" required />
     <button type="submit" class="btn">注册</button>
@@ -54,60 +54,50 @@
   </div>
 
   <script>
-    // === 配置你的后端地址，格式举例：http://123.45.67.89:5000 ===
-    const BACKEND_URL = 'http://你的服务器公网IP:5000';
+    // 后端接口地址：请确保你的 Flask 后端 /register 路由已就绪
+    const BACKEND_REGISTER = 'http://43.143.121.17:5000/register';
 
-    // ==== 注册功能代码 ====
-    const registerForm = document.getElementById('registerForm');
-    const registerMsg = document.getElementById('registerMsg');
-
-    registerForm.addEventListener('submit', async (e) => {
+    // 注册功能
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      registerMsg.textContent = '';
-
+      const msgEl = document.getElementById('registerMsg');
+      msgEl.textContent = '';
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value.trim();
-
       if (!username || !password) {
-        registerMsg.textContent = '用户名和密码不能为空';
+        msgEl.textContent = '用户名和密码不能为空';
         return;
       }
-
       try {
-        const res = await fetch(`${BACKEND_URL}/register`, {
+        const res = await fetch(BACKEND_REGISTER, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password })
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({username, password})
         });
         const data = await res.json();
-
         if (data.status === 'success') {
-          registerMsg.style.color = 'green';
-          registerMsg.textContent = '注册成功！可以登录了。';
-          registerForm.reset();
+          msgEl.style.color = 'green';
+          msgEl.textContent = '注册成功！';
+          e.target.reset();
         } else {
-          registerMsg.style.color = 'red';
-          registerMsg.textContent = data.message || '注册失败';
+          msgEl.style.color = 'red';
+          msgEl.textContent = data.message || '注册失败';
         }
-      } catch (error) {
-        registerMsg.style.color = 'red';
-        registerMsg.textContent = '请求失败，请稍后再试';
+      } catch (err) {
+        msgEl.style.color = 'red';
+        msgEl.textContent = '网络错误，请稍后再试';
+        console.error(err);
       }
     });
 
-    // ==== 下面是你之前的翻牌逻辑 ====
+    // ==== 翻牌功能参数设置 ====
     const TOTAL_CARDS = 250;
     const PAGE_SIZE = 4;
-    let currentPage = 1;
-    let isUnlocked = false;
-    let isVip = false;
-    let balance = 0;
+    let currentPage = 1, isUnlocked = false, isVip = false, balance = 0;
 
     const cards = Array.from({length: TOTAL_CARDS}, (_,i)=>({
-      id: i+1,
-      img: (i%50)+1,
-      name: `用户${i+1}`,
-      intro: `这是用户${i+1}的简介`
+      id: i+1, img: (i%50)+1,
+      name: `用户${i+1}`, intro: `这是用户${i+1}的简介`
     }));
 
     const grid = document.getElementById('grid');
@@ -121,8 +111,7 @@
     function renderPage() {
       grid.innerHTML = '';
       const start = (currentPage-1)*PAGE_SIZE;
-      const pageData = cards.slice(start, start+PAGE_SIZE);
-      pageData.forEach(card=>{
+      cards.slice(start, start+PAGE_SIZE).forEach(card=>{
         const div = document.createElement('div');
         div.className = 'card';
         div.innerHTML = `
@@ -158,26 +147,12 @@
       }
     }
 
-    prevBtn.onclick = () => {
-      if (currentPage>1) { currentPage--; renderPage(); }
-    };
-    nextBtn.onclick = () => {
-      if (currentPage<Math.ceil(TOTAL_CARDS/PAGE_SIZE)) { currentPage++; renderPage(); }
-    };
-    shareBtn.onclick = ()=> {
-      isUnlocked = true;
-      statusEl.textContent = isVip ? '会员状态，已解锁全部功能' : '已分享，解锁翻页';
-      renderPage();
-    };
-    vipBtn.onclick = ()=> {
-      isVip = true; balance = Infinity;
-      isUnlocked = true;
-      statusEl.textContent = '会员状态，免费翻页翻牌';
-      renderPage();
-    };
+    prevBtn.onclick = () => { if (currentPage>1) currentPage--, renderPage(); };
+    nextBtn.onclick = () => { if (currentPage<Math.ceil(TOTAL_CARDS/PAGE_SIZE)) currentPage++, renderPage(); };
+    shareBtn.onclick = () => { isUnlocked = true; statusEl.textContent = isVip?'会员状态，已解锁全部功能':'已分享，解锁翻页'; renderPage(); };
+    vipBtn.onclick   = () => { isVip=true; balance=Infinity; isUnlocked=true; statusEl.textContent='会员状态，免费翻页翻牌'; renderPage(); };
 
     renderPage();
-
   </script>
 
 </body>
